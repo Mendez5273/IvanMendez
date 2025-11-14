@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Results - Political & Philosophical Compass</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #8B6F47 0%, #6B4423 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 6px solid #000000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .result-category {
+            color: #8B6F47;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .result-name {
+            color: #2d3748;
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .result-thinkers {
+            color: #4a5568;
+            font-size: 1em;
+            font-style: italic;
+            margin-bottom: 15px;
+        }
+
+        .result-description {
+            color: #2d3748;
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .result-ideas {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            color: #4a5568;
+            font-size: 0.95em;
+            border-left: 3px solid #8B6F47;
+        }
+
+        .result-ideas strong {
+            color: #6B4423;
+        }
+
+        .back-btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #8B6F47 0%, #6B4423 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: transform 0.2s;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(139, 111, 71, 0.4);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #718096;
+            font-size: 1.2em;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .result-name {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Your Results</h1>
+        <p class="subtitle">Your closest philosophical, economic, and political matches</p>
+        
+        <div id="results-container">
+            <div class="loading">Calculating your results...</div>
+        </div>
+
+        <a href="https://ivanmendez.space/index.html" class="back-btn">Take Quiz Again</a>
+    </div>
+
+    <script>
+        // Profile data
+        const profiles = {
+            philosophers: {
+                camus: {
+                    name: "Albert Camus",
+                    description: "The Absurdist — Life has no inherent meaning, but you create your own through rebellion and living fully. Embrace the absurd.",
+                    key_ideas: "Absurdism, revolt, the myth of Sisyphus, acceptance without despair"
+                },
+                nietzsche: {
+                    name: "Friedrich Nietzsche",
+                    description: "The Iconoclast — Reject traditional morality, embrace struggle, become who you are. Power, creativity, and self-overcoming.",
+                    key_ideas: "Will to power, Übermensch, eternal recurrence, master morality"
+                },
+                sartre: {
+                    name: "Jean-Paul Sartre",
+                    description: "The Existentialist — Existence precedes essence. You are radically free and responsible for creating yourself.",
+                    key_ideas: "Radical freedom, bad faith, existence precedes essence, authenticity"
+                },
+                dostoevsky: {
+                    name: "Fyodor Dostoevsky",
+                    description: "The Spiritual Wrestler — Suffering reveals truth, faith wrestles with doubt, tradition and community ground us.",
+                    key_ideas: "Suffering as redemptive, faith vs. reason, human irrationality, moral struggle"
+                },
+                weil: {
+                    name: "Simone Weil",
+                    description: "The Mystic Activist — Labor has dignity, suffering opens us to the sacred, justice requires spiritual grounding.",
+                    key_ideas: "Attention as prayer, workers' dignity, decreation, gravity and grace"
+                },
+                mill: {
+                    name: "John Stuart Mill",
+                    description: "The Liberal Rationalist — Individual liberty, reason over tradition, greatest happiness for the greatest number.",
+                    key_ideas: "Utilitarianism, harm principle, individual liberty, rational progress"
+                },
+                arendt: {
+                    name: "Hannah Arendt",
+                    description: "The Political Thinker — Human dignity comes from political engagement, not private life. Beware the banality of evil.",
+                    key_ideas: "Public vs private realm, plurality, the banality of evil, political action"
+                }
+            },
+            socialists: {
+                anarcho_syndicalist: {
+                    name: "Anarcho-Syndicalist",
+                    thinkers: "Noam Chomsky, Peter Kropotkin, Rudolf Rocker",
+                    description: "Workers should control production directly through unions and cooperatives. No bosses, no state—just mutual aid and direct democracy.",
+                    key_ideas: "Worker councils, abolish hierarchy, mutual aid, direct action"
+                },
+                democratic_socialist: {
+                    name: "Democratic Socialist",
+                    thinkers: "Eugene Debs, early Bernie Sanders, Rosa Luxemburg",
+                    description: "Use elections to transfer power from capitalists to workers. Nationalize key industries, but keep democracy strong.",
+                    key_ideas: "Electoral path to socialism, worker ownership, strong public sector, democratic control"
+                },
+                social_democrat: {
+                    name: "Social Democrat",
+                    thinkers: "FDR, modern Bernie Sanders, Nordic model",
+                    description: "Keep capitalism but tame it hard—strong unions, high taxes on the rich, universal healthcare, free college.",
+                    key_ideas: "Welfare state, regulated capitalism, strong safety net, labor rights"
+                },
+                marxist_leninist: {
+                    name: "Marxist-Leninist",
+                    thinkers: "Vladimir Lenin, historical communist parties",
+                    description: "Revolutionary vanguard party seizes state power, nationalizes economy, transitions to communism through state control.",
+                    key_ideas: "Vanguard party, state ownership, dictatorship of the proletariat, centralized planning"
+                },
+                libertarian_socialist: {
+                    name: "Libertarian Socialist",
+                    thinkers: "Murray Bookchin, Ursula K. Le Guin, anarchist traditions",
+                    description: "Decentralized communes, voluntary cooperation, ecology-focused, anti-authoritarian left. Freedom AND equality.",
+                    key_ideas: "Decentralization, voluntary association, ecological consciousness, anti-state socialism"
+                }
+            },
+            politicians: {
+                bernie: {
+                    name: "Bernie Sanders",
+                    description: "Democratic socialist/social democrat who fights Wall Street, supports Medicare for All, and challenges corporate power.",
+                    key_positions: "Economic populism, anti-establishment, workers' rights, single-payer healthcare"
+                },
+                fdr: {
+                    name: "Franklin D. Roosevelt (FDR)",
+                    description: "New Deal architect who used government power to lift people from Depression, built social safety net, but pragmatic not ideological.",
+                    key_positions: "New Deal, strong government intervention, infrastructure, labor rights, WWII leadership"
+                },
+                obama: {
+                    name: "Barack Obama",
+                    description: "Technocratic liberal who believes in incremental progress, international cooperation, and careful reform within existing systems.",
+                    key_positions: "Healthcare reform, globalism, tech-optimism, cautious progressivism, diplomacy"
+                },
+                eisenhower: {
+                    name: "Dwight D. Eisenhower",
+                    description: "Moderate Republican who built highways, warned against military-industrial complex, balanced budgets with social investment.",
+                    key_positions: "Infrastructure, military caution, fiscal responsibility, moderate social policy"
+                },
+                reagan: {
+                    name: "Ronald Reagan",
+                    description: "Conservative who cut taxes, strengthened military, promoted traditional values and free markets. 'Government IS the problem.'",
+                    key_positions: "Tax cuts, deregulation, strong military, traditional values, anti-communism"
+                },
+                teddy: {
+                    name: "Theodore Roosevelt",
+                    description: "Progressive Republican trust-buster who loved conservation and muscular American power abroad. 'Speak softly, carry a big stick.'",
+                    key_positions: "Trust-busting, conservation, progressive reform, American imperialism, activist government"
+                },
+                barbara_lee: {
+                    name: "Barbara Lee",
+                    description: "Consistent anti-war progressive who voted against Afghanistan war, fights for racial justice and economic equality.",
+                    key_positions: "Anti-war, racial justice, economic equality, criminal justice reform, consistent left"
+                }
+            }
+        };
+
+        // Scoring matrix
+        const scoringMatrix = {
+            philosophers: {
+                11: {
+                    camus: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 2, strongly_agree: 3},
+                    nietzsche: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 2, strongly_agree: 3},
+                    sartre: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 2, strongly_agree: 4},
+                    dostoevsky: {strongly_disagree: 3, slightly_disagree: 2, slightly_agree: 0, strongly_agree: 0},
+                    weil: {strongly_disagree: 1, slightly_disagree: 1, slightly_agree: 1, strongly_agree: 1},
+                    mill: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 1, strongly_agree: 2},
+                    arendt: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 1, strongly_agree: 2}
+                },
+                12: {
+                    camus: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 1, strongly_agree: 2},
+                    nietzsche: {strongly_disagree: 1, slightly_disagree: 1, slightly_agree: 1, strongly_agree: 1},
+                    sartre: {strongly_disagree: 3, slightly_disagree: 2, slightly_agree: 0, strongly_agree: 0},
+                    dostoevsky: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 1, strongly_agree: 2},
+                    weil: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 1, strongly_agree: 2},
+                    mill: {strongly_disagree: 1, slightly_disagree: 1, slightly_agree: 1, strongly_agree: 1},
+                    arendt: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 1, strongly_agree: 1}
+                },
+                13: {
+                    camus: {strongly_disagree: 2, slightly_disagree: 1, slightly_agree: 0, strongly_agree: 0},
+                    nietzsche: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 2, strongly_agree: 3},
+                    sartre: {strongly_disagree: 4, slightly_disagree: 2, slightly_agree: 0, strongly_agree: 0},
+                    dostoevsky: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 1, strongly_agree: 2},
+                    weil: {strongly_disagree: 2, slightly_disagree: 2, slightly_agree: 0, strongly_agree: 0},
+                    mill: {strongly_disagree: 4, slightly_disagree: 3, slightly_agree: 0, strongly_agree: 0},
+                    arendt: {strongly_disagree: 3, slightly_disagree: 2, slightly_agree: 0, strongly_agree: 0}
+                },
+                14: {
+                    camus: {strongly_disagree: 2, slightly_disagree: 2, slightly_agree: 1, strongly_agree: 0},
+                    nietzsche: {strongly_disagree: 4, slightly_disagree: 2, slightly_agree: 0, strongly_agree: 0},
+                    sartre: {strongly_disagree: 4, slightly_disagree: 3, slightly_agree: 0, strongly_agree: 0},
+                    dostoevsky: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 4},
+                    weil: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 2, strongly_agree: 3},
+                    mill: {strongly_disagree: 3, slightly_disagree: 2, slightly_agree: 0, strongly_agree: 0},
+                    arendt: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 1, strongly_agree: 2}
+                },
+                15: {
+                    camus: {strongly_disagree: 2, slightly_disagree: 2, slightly_agree: 0, strongly_agree: 0},
+                    nietzsche: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 2, strongly_agree: 3},
+                    sartre: {strongly_disagree: 3, slightly_disagree: 2, slightly_agree: 0, strongly_agree: 0},
+                    dostoevsky: {strongly_disagree: 3, slightly_disagree: 2, slightly_agree: 0, strongly_agree: 0},
+                    weil: {strongly_disagree: 4, slightly_disagree: 3, slightly_agree: 0, strongly_agree: 0},
+                    mill: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 1, strongly_agree: 2},
+                    arendt: {strongly_disagree: 1, slightly_disagree: 1, slightly_agree: 1, strongly_agree: 1}
+                },
+                16: {
+                    camus: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 1, strongly_agree: 2},
+                    nietzsche: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 2, strongly_agree: 3},
+                    sartre: {strongly_disagree: 1, slightly_disagree: 1, slightly_agree: 1, strongly_agree: 1},
+                    dostoevsky: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 4},
+                    weil: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 4},
+                    mill: {strongly_disagree: 3, slightly_disagree: 2, slightly_agree: 0, strongly_agree: 0},
+                    arendt: {strongly_disagree: 1, slightly_disagree: 1, slightly_agree: 1, strongly_agree: 1}
+                },
+                17: {
+                    camus: {strongly_disagree: 1, slightly_disagree: 1, slightly_agree: 1, strongly_agree: 1},
+                    nietzsche: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 4},
+                    sartre: {strongly_disagree: 1, slightly_disagree: 1, slightly_agree: 1, strongly_agree: 0},
+                    dostoevsky: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 4},
+                    weil: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 2, strongly_agree: 3},
+                    mill: {strongly_disagree: 2, slightly_disagree: 1, slightly_agree: 0, strongly_agree: 0},
+                    arendt: {strongly_disagree: 1, slightly_disagree: 1, slightly_agree: 1, strongly_agree: 0}
+                }
+            },
+            socialists: {
+                2: {
+                    anarcho_syndicalist: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 2, strongly_agree: 3},
+                    democratic_socialist: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 2, strongly_agree: 3},
+                    social_democrat: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 2, strongly_agree: 2},
+                    marxist_leninist: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 1, strongly_agree: 2},
+                    libertarian_socialist: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 2, strongly_agree: 3}
+                },
+                18: {
+                    anarcho_syndicalist: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 2, strongly_agree: 3},
+                    democratic_socialist: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 4},
+                    social_democrat: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 2, strongly_agree: 3},
+                    marxist_leninist: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 4},
+                    libertarian_socialist: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 2, strongly_agree: 3}
+                },
+                19: {
+                    anarcho_syndicalist: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 5},
+                    democratic_socialist: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 4},
+                    social_democrat: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 2},
+                    marxist_leninist: {strongly_disagree: 1, slightly_disagree: 1, slightly_agree: 1, strongly_agree: 1},
+                    libertarian_socialist: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 5}
+                },
+                21: {
+                    anarcho_syndicalist: {strongly_disagree: 3, slightly_disagree: 2, slightly_agree: 0, strongly_agree: 0},
+                    democratic_socialist: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 4},
+                    social_democrat: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 2},
+                    marxist_leninist: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 5},
+                    libertarian_socialist: {strongly_disagree: 2, slightly_disagree: 1, slightly_agree: 1, strongly_agree: 1}
+                },
+                22: {
+                    anarcho_syndicalist: {strongly_disagree: 3, slightly_disagree: 2, slightly_agree: 1, strongly_agree: 0},
+                    democratic_socialist: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 2},
+                    social_democrat: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 3},
+                    marxist_leninist: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 2},
+                    libertarian_socialist: {strongly_disagree: 2, slightly_disagree: 2, slightly_agree: 1, strongly_agree: 1}
+                },
+                24: {
+                    anarcho_syndicalist: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 4},
+                    democratic_socialist: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 2},
+                    social_democrat: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 1, strongly_agree: 1},
+                    marxist_leninist: {strongly_disagree: 2, slightly_disagree: 1, slightly_agree: 0, strongly_agree: 0},
+                    libertarian_socialist: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 4}
+                }
+            },
+            politicians: {
+                1: {
+                    bernie: {strongly_disagree: 2, slightly_disagree: 2, slightly_agree: 1, strongly_agree: 0},
+                    fdr: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 2},
+                    obama: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 3},
+                    eisenhower: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 2},
+                    reagan: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 4},
+                    teddy: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 2, strongly_agree: 3},
+                    barbara_lee: {strongly_disagree: 4, slightly_disagree: 3, slightly_agree: 0, strongly_agree: 0}
+                },
+                3: {
+                    bernie: {strongly_disagree: 2, slightly_disagree: 2, slightly_agree: 1, strongly_agree: 0},
+                    fdr: {strongly_disagree: 1, slightly_disagree: 1, slightly_agree: 1, strongly_agree: 1},
+                    obama: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 2},
+                    eisenhower: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 2},
+                    reagan: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 2, strongly_agree: 3},
+                    teddy: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 2},
+                    barbara_lee: {strongly_disagree: 4, slightly_disagree: 3, slightly_agree: 0, strongly_agree: 0}
+                },
+                4: {
+                    bernie: {strongly_disagree: 2, slightly_disagree: 2, slightly_agree: 1, strongly_agree: 0},
+                    fdr: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 2},
+                    obama: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 2},
+                    eisenhower: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 2, strongly_agree: 3},
+                    reagan: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 4},
+                    teddy: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 4},
+                    barbara_lee: {strongly_disagree: 3, slightly_disagree: 2, slightly_agree: 1, strongly_agree: 0}
+                },
+                5: {
+                    bernie: {strongly_disagree: 4, slightly_disagree: 2, slightly_agree: 0, strongly_agree: 0},
+                    fdr: {strongly_disagree: 2, slightly_disagree: 1, slightly_agree: 0, strongly_agree: 0},
+                    obama: {strongly_disagree: 3, slightly_disagree: 2, slightly_agree: 0, strongly_agree: 0},
+                    eisenhower: {strongly_disagree: 2, slightly_disagree: 2, slightly_agree: 0, strongly_agree: 0},
+                    reagan: {strongly_disagree: 1, slightly_disagree: 1, slightly_agree: 1, strongly_agree: 1},
+                    teddy: {strongly_disagree: 1, slightly_disagree: 1, slightly_agree: 1, strongly_agree: 1},
+                    barbara_lee: {strongly_disagree: 4, slightly_disagree: 2, slightly_agree: 0, strongly_agree: 0}
+                },
+                6: {
+                    bernie: {strongly_disagree: 3, slightly_disagree: 2, slightly_agree: 0, strongly_agree: 0},
+                    fdr: {strongly_disagree: 1, slightly_disagree: 1, slightly_agree: 1, strongly_agree: 1},
+                    obama: {strongly_disagree: 2, slightly_disagree: 2, slightly_agree: 1, strongly_agree: 0},
+                    eisenhower: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 2},
+                    reagan: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 4},
+                    teddy: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 2},
+                    barbara_lee: {strongly_disagree: 3, slightly_disagree: 2, slightly_agree: 0, strongly_agree: 0}
+                },
+                7: {
+                    bernie: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 2},
+                    fdr: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 3},
+                    obama: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 4},
+                    eisenhower: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 3},
+                    reagan: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 3},
+                    teddy: {strongly_disagree: 1, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 2},
+                    barbara_lee: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 2}
+                },
+                8: {
+                    bernie: {strongly_disagree: 3, slightly_disagree: 2, slightly_agree: 1, strongly_agree: 0},
+                    fdr: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 3},
+                    obama: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 2},
+                    eisenhower: {strongly_disagree: 1, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 2},
+                    reagan: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 4},
+                    teddy: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 4},
+                    barbara_lee: {strongly_disagree: 5, slightly_disagree: 2, slightly_agree: 0, strongly_agree: 0}
+                },
+                9: {
+                    bernie: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 4},
+                    fdr: {strongly_disagree: 1, slightly_disagree: 1, slightly_agree: 1, strongly_agree: 1},
+                    obama: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 2},
+                    eisenhower: {strongly_disagree: 2, slightly_disagree: 2, slightly_agree: 1, strongly_agree: 0},
+                    reagan: {strongly_disagree: 3, slightly_disagree: 2, slightly_agree: 0, strongly_agree: 0},
+                    teddy: {strongly_disagree: 2, slightly_disagree: 2, slightly_agree: 0, strongly_agree: 0},
+                    barbara_lee: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 4}
+                },
+                10: {
+                    bernie: {strongly_disagree: 2, slightly_disagree: 2, slightly_agree: 1, strongly_agree: 1},
+                    fdr: {strongly_disagree: 2, slightly_disagree: 2, slightly_agree: 1, strongly_agree: 0},
+                    obama: {strongly_disagree: 2, slightly_disagree: 2, slightly_agree: 1, strongly_agree: 0},
+                    eisenhower: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 2},
+                    reagan: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 4},
+                    teddy: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 3},
+                    barbara_lee: {strongly_disagree: 3, slightly_disagree: 2, slightly_agree: 1, strongly_agree: 0}
+                },
+                20: {
+                    bernie: {strongly_disagree: 4, slightly_disagree: 2, slightly_agree: 0, strongly_agree: 0},
+                    fdr: {strongly_disagree: 3, slightly_disagree: 2, slightly_agree: 1, strongly_agree: 0},
+                    obama: {strongly_disagree: 1, slightly_disagree: 2, slightly_agree: 2, strongly_agree: 1},
+                    eisenhower: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 2},
+                    reagan: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 4},
+                    teddy: {strongly_disagree: 1, slightly_disagree: 2, slightly_agree: 2, strongly_agree: 1},
+                    barbara_lee: {strongly_disagree: 4, slightly_disagree: 2, slightly_agree: 0, strongly_agree: 0}
+                },
+                23: {
+                    bernie: {strongly_disagree: 2, slightly_disagree: 2, slightly_agree: 1, strongly_agree: 0},
+                    fdr: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 2},
+                    obama: {strongly_disagree: 2, slightly_disagree: 2, slightly_agree: 1, strongly_agree: 1},
+                    eisenhower: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 3},
+                    reagan: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 4},
+                    teddy: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 3},
+                    barbara_lee: {strongly_disagree: 3, slightly_disagree: 2, slightly_agree: 0, strongly_agree: 0}
+                },
+                25: {
+                    bernie: {strongly_disagree: 3, slightly_disagree: 2, slightly_agree: 0, strongly_agree: 0},
+                    fdr: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 2},
+                    obama: {strongly_disagree: 2, slightly_disagree: 2, slightly_agree: 1, strongly_agree: 1},
+                    eisenhower: {strongly_disagree: 0, slightly_disagree: 1, slightly_agree: 2, strongly_agree: 2},
+                    reagan: {strongly_disagree: 0, slightly_disagree: 0, slightly_agree: 3, strongly_agree: 4},
+                    teddy: {strongly_disagree: 3, slightly_disagree: 2, slightly_agree: 1, strongly_agree: 0},
+                    barbara_lee: {strongly_disagree: 4, slightly_disagree: 2, slightly_agree: 0, strongly_agree: 0}
+                }
+            }
+        };
+
+        // Map answer values to string keys
+        function getAnswerKey(value) {
+            const map = {
+                1: 'strongly_disagree',
+                2: 'slightly_disagree',
+                3: 'slightly_agree',
+                4: 'strongly_agree'
+            };
+            return map[value];
+        }
+
+        // Calculate results
+        function calculateResults() {
+            // Get answers from localStorage
+            const answersJson = localStorage.getItem('quizAnswers');
+            if (!answersJson) {
+                document.getElementById('results-container').innerHTML = 
+                    '<div class="loading">No quiz data found. Please take the quiz first.</div>';
+                return;
+            }
+
+            const answers = JSON.parse(answersJson);
+
+            // Initialize scores
+            const philosopherScores = {
+                camus: 0, nietzsche: 0, sartre: 0, dostoevsky: 0, 
+                weil: 0, mill: 0, arendt: 0
+            };
+            const socialistScores = {
+                anarcho_syndicalist: 0, democratic_socialist: 0, social_democrat: 0,
+                marxist_leninist: 0, libertarian_socialist: 0
+            };
+            const politicianScores = {
+                bernie: 0, fdr: 0, obama: 0, eisenhower: 0,
+                reagan: 0, teddy: 0, barbara_lee: 0
+            };
+
+            // Score each answer
+            for (let i = 1; i <= 25; i++) {
+                const questionId = i.toString();
+                const answerValue = answers[`q${i}`];
+                const answerKey = getAnswerKey(answerValue);
+
+                // Score philosophers
+                if (scoringMatrix.philosophers[questionId]) {
+                    for (const phil in philosopherScores) {
+                        const points = scoringMatrix.philosophers[questionId][phil]?.[answerKey] || 0;
+                        philosopherScores[phil] += points;
+                    }
+                }
+
+                // Score socialists
+                if (scoringMatrix.socialists[questionId]) {
+                    for (const soc in socialistScores) {
+                        const points = scoringMatrix.socialists[questionId][soc]?.[answerKey] || 0;
+                        socialistScores[soc] += points;
+                    }
+                }
+
+                // Score politicians
+                if (scoringMatrix.politicians[questionId]) {
+                    for (const pol in politicianScores) {
+                        const points = scoringMatrix.politicians[questionId][pol]?.[answerKey] || 0;
+                        politicianScores[pol] += points;
+                    }
+                }
+            }
+
+            // Find top scorer in each category
+            const topPhilosopher = Object.keys(philosopherScores).reduce((a, b) => 
+                philosopherScores[a] > philosopherScores[b] ? a : b
+            );
+            const topSocialist = Object.keys(socialistScores).reduce((a, b) => 
+                socialistScores[a] > socialistScores[b] ? a : b
+            );
+            const topPolitician = Object.keys(politicianScores).reduce((a, b) => 
+                politicianScores[a] > politicianScores[b] ? a : b
+            );
+
+            // Display results
+            displayResults(topPhilosopher, topSocialist, topPolitician);
+        }
+
+        function displayResults(philosopherKey, socialistKey, politicianKey) {
+            const philosopher = profiles.philosophers[philosopherKey];
+            const socialist = profiles.socialists[socialistKey];
+            const politician = profiles.politicians[politicianKey];
+
+            const html = `
+                <div class="result-card">
+                    <div class="result-category">Your Philosopher</div>
+                    <div class="result-name">${philosopher.name}</div>
+                    <div class="result-description">${philosopher.description}</div>
+                    <div class="result-ideas"><strong>Key Ideas:</strong> ${philosopher.key_ideas}</div>
+                </div>
+
+                <div class="result-card">
+                    <div class="result-category">Your Economic Philosophy</div>
+                    <div class="result-name">${socialist.name}</div>
+                    <div class="result-thinkers">${socialist.thinkers}</div>
+                    <div class="result-description">${socialist.description}</div>
+                    <div class="result-ideas"><strong>Key Ideas:</strong> ${socialist.key_ideas}</div>
+                </div>
+
+                <div class="result-card">
+                    <div class="result-category">Your Political Match</div>
+                    <div class="result-name">${politician.name}</div>
+                    <div class="result-description">${politician.description}</div>
+                    <div class="result-ideas"><strong>Key Positions:</strong> ${politician.key_positions}</div>
+                </div>
+            `;
+
+            document.getElementById('results-container').innerHTML = html;
+        }
+
+        // Run calculation when page loads
+        calculateResults();
+    </script>
+</body>
+</html>
